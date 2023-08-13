@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express';  
 const app = express();
 
 app.use(express.json());
@@ -7,17 +7,38 @@ let ADMINS = [];
 let USERS = [];
 let COURSES = [];
 
+const authentication= (req,res,next) =>{
+  const { username, password } = req.headers;
+
+  const admin = ADMINS.find(a => a.username == username && a.password == password);
+  if (admin) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Admin authentication failed' });
+  }
+}
+
 // Admin routes
 app.post('/admin/signup', (req, res) => {
-  // logic to sign up admin
+  const admins = req.body;
+  const existingUser = ADMINS.find((a)=>a.username == admins.username);
+  if(existingUser){
+    res.status(403).json({message:"User already exists"})
+
+  }else{
+    ADMINS.push(admins)
+    res.status(201).send("Admin created succesfully")
+  }
+
 });
 
-app.post('/admin/login', (req, res) => {
-  // logic to log in admin
+app.post('/admin/login', authentication,(req, res) => {
+  res.json({ message: 'Logged in successfully' });
 });
 
 app.post('/admin/courses', (req, res) => {
   // logic to create a course
+
 });
 
 app.put('/admin/courses/:courseId', (req, res) => {

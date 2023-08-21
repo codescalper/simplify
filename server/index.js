@@ -35,27 +35,37 @@ app.post('/admin/signup', (req, res) => {
 app.post('/admin/login', authentication,(req, res) => {
   res.json({ message: 'Logged in successfully' });
 });
-
-app.post('/admin/courses', (req, res) => {
-  // logic to create a course
+var id = 1;
+app.post('/admin/courses',authentication, (req, res) => {
+    const courses = req.body
+    courses.id = id++;
+    COURSES.push(courses)
+    res.json({message: 'Course created successfully', courseId: courses.id})
 
 });
 
 app.put('/admin/courses/:courseId', (req, res) => {
-  // logic to edit a course
+  const courseId = parseInt(req.params.courseId);
+  const editCourses = COURSES.findIndex((a)=>a.id===courseId);
+  COURSES[editCourses] = req.body;
+  res.json(COURSES[editCourses]);
 });
 
-app.get('/admin/courses', (req, res) => {
-  // logic to get all courses
+app.get('/admin/courses',authentication, (req, res) => {
+  res.json(COURSES);
 });
 
 // User routes
 app.post('/users/signup', (req, res) => {
-  // logic to sign up user
+  const userDetails = {...req.body, purchasedCourses: []};
+  USERS.push(userDetails)
+  res.json({message: "Account Created Successfuully"});
 });
 
+
+
 app.post('/users/login', (req, res) => {
-  // logic to log in user
+  
 });
 
 app.get('/users/courses', (req, res) => {

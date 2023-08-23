@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { Schema, model, connect } from 'mongoose';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
+
 
 dotenv.config();
 const { verify, sign } = jwt;
@@ -34,7 +36,7 @@ const courseSchema = new Schema({
 const User = model('User', userSchema);
 const Admin = model('Admin', adminSchema);
 const Course = model('Course', courseSchema);
-const SECRET = '123456789';
+const SECRET = process.env.SECRET;
 const authenticateJwt = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader) {
@@ -58,28 +60,25 @@ let COURSES = [];
 
 mongoose.connect(process.env.CLUSTER_URL, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "course" });
 // Admin routes
-app.post('/admin/signup', (req, res) => {
+app.post('/admin/signup', async (req, res) => {
   const { username, password } = req.body;
-  function callback(admin) {
-    if (admin) {
-      res.status(403).json({ message: 'Admin already exists' });
-    } else {
-      const obj = { username: username, password: password };
-      const newAdmin = new Admin(obj);
-      newAdmin.save();
-      const token = sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
-      res.json({ message: 'Admin created successfully', token });
-    }
-
+  const admin = await Admin.findOne({ username });
+  if (admin) {
+    res.status(403).json({ message: 'Admin already exists' });
+  } else {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAdmin = new Admin({ username, password: hashedPassword });
+    await newAdmin.save();
+    const token = sign({ username, role: 'admin' }, process.env.SECRET, { expiresIn: '1h' });
+    res.json({ message: 'Admin created successfully', token });
   }
-  Admin.findOne({ username }).then(callback);
 });
 
 app.post('/admin/login', async (req, res) => {
   const { username, password } = req.headers;
-  const admin = await Admin.findOne({ username, password });
-  if (admin) {
-    const token = sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
+  const admin = await Admin.findOne({ username });
+  if (admin && bcrypt.compare(password, admin.password)) {
+    const token = sign({ username, role: 'admin' }, process.env.SECRET, { expiresIn: '1h' });
     res.json({ message: 'Logged in successfully', token });
   } else {
     res.status(403).json({ message: 'Invalid username or password' });

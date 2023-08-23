@@ -1,5 +1,6 @@
 import express, { json } from 'express';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import { Schema, model, connect } from 'mongoose';
 import dotenv from 'dotenv';
 

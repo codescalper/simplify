@@ -11,7 +11,10 @@ const { verify, sign } = jwt;
 const app = express();
 app.use(json());
 app.use(cors({
-  origin: ["http://localhost:5173/"],
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"],
+  credentials: true
 }))
 
 // 1) Define the shape of the data (Schema of the data)

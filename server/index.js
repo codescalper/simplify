@@ -10,7 +10,9 @@ dotenv.config();
 const { verify, sign } = jwt;
 const app = express();
 app.use(json());
-app.use(cors())
+app.use(cors({
+  origin: ["http://localhost:5173/"],
+}))
 
 // 1) Define the shape of the data (Schema of the data)
 const userSchema = new Schema({

@@ -4,12 +4,13 @@ import mongoose from 'mongoose';
 import { Schema, model, connect } from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-
+import cors from 'cors';
 
 dotenv.config();
 const { verify, sign } = jwt;
 const app = express();
 app.use(json());
+app.use(cors())
 
 // 1) Define the shape of the data (Schema of the data)
 const userSchema = new Schema({
